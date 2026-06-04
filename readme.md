@@ -2,7 +2,7 @@
 
 A RESTful issue tracking API built with Node.js, Express, and PostgreSQL. Supports role-based access control for contributors and maintainers to report, manage, and resolve project issues.
 
-**Live URL:** `https://your-deployment-url.com`
+**Live URL:** `https://devpulse-snowy.vercel.app/`
 
 ---
 

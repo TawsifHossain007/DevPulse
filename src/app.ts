@@ -6,12 +6,19 @@ import express, {
 import { initDB } from "./db";
 import { authRoute } from "./modules/auth/auth.route";
 import { issuesRoute } from "./modules/issues/issues.route";
+import cors from "cors";
+import globalErrorHandler from "./middleware/globalErrorHandler";
 
 const app: Application = express();
 
 app.use(express.json());
 app.use(express.text());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  }),
+);
 
 initDB();
 
@@ -21,6 +28,9 @@ app.get("/", (req: Request, res: Response) => {
     author: "Tawsif Hossain",
   });
 });
+
+// Global Error Handling Middleware
+app.use(globalErrorHandler);
 
 app.use('/api/auth', authRoute);
 app.use('/api/issues',issuesRoute);
