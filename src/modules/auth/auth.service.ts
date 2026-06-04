@@ -15,7 +15,7 @@ const signUpUserInDB = async (payload: IUser) => {
     [email],
   );
 
-  if (user) {
+  if (user.rows.length > 0) {
     throw new Error("User Already Exists");
   }
 
@@ -69,7 +69,6 @@ const loginUserInDB = async (payload: IUser) => {
 
   return { token, user: jwtPayload };
 };
-
 
 export const authService = {
   signUpUserInDB,
