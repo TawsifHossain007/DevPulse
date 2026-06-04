@@ -476,10 +476,27 @@ router2.delete("/:id", auth_default("maintainer"), issuesController.deleteIssue)
 var issuesRoute = router2;
 
 // src/app.ts
+var import_cors = __toESM(require("cors"));
+
+// src/middleware/globalErrorHandler.ts
+var globalErrorHandler = (err, req, res, next) => {
+  res.status(500).json({
+    success: false,
+    message: err.message || "Internal Server Error"
+  });
+};
+var globalErrorHandler_default = globalErrorHandler;
+
+// src/app.ts
 var app = (0, import_express3.default)();
 app.use(import_express3.default.json());
 app.use(import_express3.default.text());
 app.use(import_express3.default.urlencoded({ extended: true }));
+app.use(
+  (0, import_cors.default)({
+    origin: "http://localhost:3000"
+  })
+);
 initDB();
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -487,6 +504,7 @@ app.get("/", (req, res) => {
     author: "Tawsif Hossain"
   });
 });
+app.use(globalErrorHandler_default);
 app.use("/api/auth", authRoute);
 app.use("/api/issues", issuesRoute);
 var app_default = app;

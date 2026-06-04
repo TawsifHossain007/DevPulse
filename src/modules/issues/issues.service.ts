@@ -28,8 +28,34 @@ const createIssuesInDB = async (payload: IIssues) => {
   return result;
 };
 
-const getAllIssuesFromDB = async () => {
-  const result = await pool.query(`SELECT * FROM issues`);
+const getAllIssuesFromDB = async (query: {
+  sort?: string;
+  type?: string;
+  status?: string;
+}) => {
+  const { sort = "newest", type, status } = query;
+
+  // Build WHERE clauses dynamically
+  const conditions: string[] = [];
+  const values: any[] = [];
+
+  if (type) {
+    values.push(type);
+    conditions.push(`type = $${values.length}`);
+  }
+
+  if (status) {
+    values.push(status);
+    conditions.push(`status = $${values.length}`);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const orderClause = sort === "oldest" ? "ORDER BY created_at ASC" : "ORDER BY created_at DESC";
+
+  const result = await pool.query(
+    `SELECT * FROM issues ${whereClause} ${orderClause}`,
+    values
+  );
 
   if (result.rows.length === 0) {
     throw new Error("No issues found");
@@ -37,23 +63,20 @@ const getAllIssuesFromDB = async () => {
 
   const issues = result.rows;
 
-  // Batch fetch all reporters in a single query
   const reporterIds = issues.map((issue) => issue.reporter_id);
   const reporterResult = await pool.query(
     `SELECT id, name, role FROM users WHERE id = ANY($1)`,
-    [reporterIds],
+    [reporterIds]
   );
 
-  // Map reporters by id for quick lookup
   const reporterMap = reporterResult.rows.reduce(
     (acc, reporter) => {
       acc[reporter.id] = reporter;
       return acc;
     },
-    {} as Record<number, any>,
+    {} as Record<number, any>
   );
 
-  // Attach reporter to each issue
   return issues.map((issue) => ({
     ...issue,
     reporter: reporterMap[issue.reporter_id] ?? null,
